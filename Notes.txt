@@ -1,0 +1,11 @@
+-inside boot partition->config.txt;
+    enable_uart=1
+
+- inside boot partition->cmdline.txt:
+    console=serial0,115200 console=tty1
+
+- Added submodules
+    - meta-openembedded for Python
+    - meta-raspberrypi
+
+- bitbake aesd-image
