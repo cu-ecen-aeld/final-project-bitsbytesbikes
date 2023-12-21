@@ -9,3 +9,5 @@
     - meta-raspberrypi
 
 - bitbake aesd-image
+
+- setting hostname in local.conf
