@@ -11,3 +11,9 @@
 - bitbake aesd-image
 
 - setting hostname in local.conf
+
+
+BME 280
+    - weather monitoring recommended settings
+    - Data sheet p 18
+    
