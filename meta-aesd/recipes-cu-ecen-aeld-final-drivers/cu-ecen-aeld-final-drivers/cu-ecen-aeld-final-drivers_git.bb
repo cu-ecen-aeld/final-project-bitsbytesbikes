@@ -16,7 +16,7 @@ SRC_URI = "git://git@github.com/bitsbytesbikes/cu-ecen-aeld-final-drivers.git;pr
 
 # Modify these as desired
 PV = "1.0+git"
-SRCREV = "e7f4d17ae3484ace0af928b475e0433d1581fb82"
+SRCREV = "1078d6fb4cb1766f37282628818ec8a3f384fc4e"
 
 S = "${WORKDIR}/git"
 
