@@ -44,9 +44,29 @@ sudo yum install gawk make wget tar bzip2 gzip python3 unzip perl patch \
    git submodule update --init --recursive
    ```
 
+   **Note**: The repository includes the following submodules:
+   - `poky` - Yocto Project core
+   - `meta-raspberrypi` - Raspberry Pi BSP layer  
+   - `meta-openembedded` - Additional packages and Python support
+
+   These must be initialized before attempting to build.
+
 ## Build Environment Setup
 
-1. **Set up the build environment:**
+1. **Verify submodules are initialized:**
+   ```bash
+   # Check that submodules contain content
+   ls poky/meta
+   ls meta-raspberrypi/conf
+   ls meta-openembedded/meta-oe
+   ```
+   
+   If these directories are empty, the submodules need initialization:
+   ```bash
+   git submodule update --init --recursive
+   ```
+
+2. **Set up the build environment:**
    ```bash
    source poky/oe-init-build-env rpi-build
    ```
@@ -56,9 +76,37 @@ sudo yum install gawk make wget tar bzip2 gzip python3 unzip perl patch \
    - Changes to the `rpi-build` directory
    - Sets up BitBake environment variables
 
-2. **Verify configuration files:**
-   - `conf/local.conf` - Build configuration
-   - `conf/bblayers.conf` - Layer configuration
+3. **Verify and update configuration files:**
+   
+   **Important**: The `conf/bblayers.conf` file may contain hardcoded paths that need to be updated for your environment.
+   
+   Check and update `conf/bblayers.conf`:
+   ```bash
+   cd rpi-build
+   # Edit bblayers.conf to use correct paths
+   # Replace any hardcoded paths with paths relative to your environment
+   ```
+   
+   **Template for bblayers.conf**:
+   ```bash
+   POKY_BBLAYERS_CONF_VERSION = "2"
+   
+   BBPATH = "${TOPDIR}"
+   BBFILES ?= ""
+   
+   BBLAYERS ?= " \
+     ${TOPDIR}/../poky/meta \
+     ${TOPDIR}/../poky/meta-poky \
+     ${TOPDIR}/../poky/meta-yocto-bsp \
+     ${TOPDIR}/../meta-raspberrypi \
+     ${TOPDIR}/../meta-openembedded/meta-oe \
+     ${TOPDIR}/../meta-openembedded/meta-python \
+     ${TOPDIR}/../meta-aesd \
+     ${TOPDIR}/workspace \
+     "
+   ```
+   
+   Also verify `conf/local.conf` for machine settings and other configurations.
 
 ## Configuration
 
@@ -66,9 +114,21 @@ sudo yum install gawk make wget tar bzip2 gzip python3 unzip perl patch \
 
 The build is pre-configured for Raspberry Pi. Key settings in `conf/local.conf`:
 
-- **Machine Target**: `MACHINE = "raspberrypi4-64"` (or appropriate Pi model)
-- **Host Name**: Custom hostname configuration
-- **Serial Console**: UART enabled for debugging
+- **Machine Target**: `MACHINE ?= "raspberrypi4-64"`
+- **Image Format**: `IMAGE_FSTYPES = "rpi-sdimg"`
+- **Host Name**: `hostname:pn-base-files = "aesd-yocto-pi"`
+- **Serial Console**: `SERIAL_CONSOLES = "115200;ttyAMA0"`
+- **UART Enable**: `ENABLE_UART = "1"`
+- **I2C Enable**: `ENABLE_I2C = "1"`
+- **Kernel Modules**: `KERNEL_MODULE_AUTOLOAD:rpi += "i2c-dev i2c-bcm2708"`
+
+These settings enable:
+- Raspberry Pi 4 64-bit target
+- SD card image format suitable for RPi
+- Custom hostname for the device
+- Serial console for debugging
+- UART communication for GPS
+- I2C interface for sensors
 
 ### Boot Configuration
 
@@ -100,9 +160,15 @@ console=serial0,115200 console=tty1
    **Note**: First build can take 2-6 hours depending on your system.
 
 2. **Build output location:**
+   Based on the configured image type (`IMAGE_FSTYPES = "rpi-sdimg"`), the build output will be:
    ```
-   tmp/deploy/images/raspberrypi4-64/aesd-image-raspberrypi4-64.wic.bz2
+   tmp/deploy/images/raspberrypi4-64/aesd-image-raspberrypi4-64.rpi-sdimg
    ```
+   
+   Additional output files may include:
+   - `*.rpi-sdimg.bz2` - Compressed SD card image
+   - `*.manifest` - Package manifest
+   - `*.testdata.json` - Build test data
 
 ## Image Components
 
@@ -136,14 +202,15 @@ The built image includes:
 
 ## Deploying the Image
 
-1. **Extract the image:**
+1. **Extract the image (if compressed):**
    ```bash
-   bunzip2 tmp/deploy/images/raspberrypi4-64/aesd-image-raspberrypi4-64.wic.bz2
+   # If the image is compressed
+   bunzip2 tmp/deploy/images/raspberrypi4-64/aesd-image-raspberrypi4-64.rpi-sdimg.bz2
    ```
 
 2. **Flash to SD card:**
    ```bash
-   sudo dd if=tmp/deploy/images/raspberrypi4-64/aesd-image-raspberrypi4-64.wic \
+   sudo dd if=tmp/deploy/images/raspberrypi4-64/aesd-image-raspberrypi4-64.rpi-sdimg \
            of=/dev/sdX bs=4M status=progress conv=fsync
    ```
    
