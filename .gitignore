@@ -1,0 +1,33 @@
+# Yocto Build Artifacts
+/rpi-build/tmp/
+/rpi-build/cache/
+/rpi-build/downloads/
+/rpi-build/sstate-cache/
+/rpi-build/workspace/
+
+# Build logs and configuration backups
+*.log
+*.orig
+*~
+.#*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary files
+/tmp/
+*.tmp
+*.temp
